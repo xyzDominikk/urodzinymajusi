@@ -3,30 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Urodziny ❤️</title>
+<title>❤️</title>
 
 <style>
+*{box-sizing:border-box}
+
 body{
 margin:0;
 font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 background:linear-gradient(135deg,#ff758c,#ff7eb3);
+height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
-color:white;
 overflow:hidden;
-transition:0.5s;
+color:white;
 }
 
+/* 🌌 INTRO */
+#intro{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:100;
+animation:introOut 1.5s ease forwards;
+animation-delay:4s;
+}
+
+.intro-text{
+text-align:center;
+font-size:28px;
+letter-spacing:2px;
+animation:introText 4s ease forwards;
+}
+
+@keyframes introText{
+0%{opacity:0;transform:scale(0.9);}
+40%{opacity:1;transform:scale(1);}
+100%{opacity:1;transform:scale(1.05);}
+}
+
+@keyframes introOut{
+to{
+opacity:0;
+filter:blur(20px);
+pointer-events:none;
+}
+}
+
+/* 📱 PHONE */
 .phone{
 width:360px;
 background:rgba(0,0,0,0.35);
 padding:30px;
-border-radius:30px;
+border-radius:32px;
 text-align:center;
 backdrop-filter:blur(20px);
+display:none;
 }
+
+.showApp{display:block;}
 
 .pulse{
 animation:pulse 2s infinite;
@@ -41,13 +83,24 @@ animation:pulse 2s infinite;
 button{
 padding:14px 20px;
 border:none;
-border-radius:14px;
+border-radius:16px;
 font-size:16px;
 margin-top:15px;
 }
 
-button:disabled{opacity:0.4;}
+button:disabled{opacity:.4}
 
+.countdown-end{
+animation:countdownExit 3s forwards;
+}
+
+@keyframes countdownExit{
+0%{transform:scale(1);opacity:1;}
+50%{transform:scale(1.4);}
+100%{transform:scale(0.6);opacity:0;filter:blur(6px);}
+}
+
+/* 💌 LETTER */
 .letter{
 position:fixed;
 bottom:-100%;
@@ -59,6 +112,7 @@ color:black;
 padding:25px;
 border-radius:20px;
 transition:1s;
+z-index:10;
 }
 
 .letter.show{
@@ -75,35 +129,22 @@ top:0;
 left:0;
 pointer-events:none;
 }
-
-/* animacja końca timera */
-.countdown-end{
-animation:countdownExit 3s forwards;
-}
-
-@keyframes countdownExit{
-0%{transform:scale(1);opacity:1;}
-50%{transform:scale(1.4);opacity:1;}
-100%{transform:scale(0.6);opacity:0;filter:blur(6px);}
-}
-
-/* admin */
-#adminBox{
-position:fixed;
-top:20px;
-right:20px;
-background:black;
-padding:15px;
-border-radius:15px;
-display:none;
-}
 </style>
 </head>
 
 <body>
 
+<!-- 🌌 INTRO -->
+<div id="intro">
+<div class="intro-text">
+Dla Ciebie ❤️<br>
+<small style="opacity:.6">22.02</small>
+</div>
+</div>
+
 <canvas id="confetti"></canvas>
 
+<!-- 📱 APP -->
 <div class="phone" id="phone">
 <h2 id="countdown">Ładowanie...</h2>
 
@@ -119,30 +160,26 @@ display:none;
 </div>
 </div>
 
+<!-- 💌 LETTER -->
 <div class="letter" id="letter">
 <h2>💌</h2>
 <p id="typedText"></p>
 <button onclick="finishReading()">Zamknij</button>
 </div>
 
-<div id="adminBox">
-<button onclick="forceUnlock()">🔓 Odblokuj</button>
-</div>
-
 <audio id="music" src="muzyka.mp3"></audio>
 
 <script>
+/* ⏰ DATA */
 const birthday=new Date(2026,1,22,0,0,0);
 let offset=0;
 let unlocked=false;
 let confettiDone=false;
 
-const isMobile=/iPhone|Android|iPad/i.test(navigator.userAgent);
-
-const fullText=`Tu wstaw swój list ❤️`;
+const fullText=`Tu wklej swój list ❤️`;
 let index=0;
 
-// 🌐 czas z internetu
+/* 🌐 TIME */
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -150,24 +187,26 @@ const d=await r.json();
 offset=new Date(d.datetime)-new Date();
 }catch{}
 }
+const now=()=>new Date(new Date().getTime()+offset);
 
-function now(){return new Date(new Date().getTime()+offset);}
+/* 🌌 INTRO → APP */
+setTimeout(()=>{
+document.getElementById("phone").classList.add("showApp");
+},4500);
 
-// ⏳ odliczanie
+/* ⏳ COUNTDOWN */
 function updateCountdown(){
-
 const diff=birthday-now();
 const el=document.getElementById("countdown");
 
 if(diff<=0 && !unlocked){
-
 unlocked=true;
 el.innerText="🎉 Wszystkiego najlepszego!";
 el.classList.add("countdown-end");
 
-setTimeout(()=>{el.style.display="none";},3000);
+setTimeout(()=>el.style.display="none",3000);
 
-document.getElementById("phone").classList.add("pulse");
+document.body.classList.add("pulse");
 
 const btn=document.getElementById("openBtn");
 btn.disabled=false;
@@ -191,7 +230,7 @@ el.innerText=`${d}d ${h}h ${m}m ${s}s`;
 
 setInterval(updateCountdown,1000);
 
-// 💌 list
+/* 💌 LETTER */
 function openLetter(){
 document.getElementById("letter").classList.add("show");
 typeWriter();
@@ -199,18 +238,17 @@ typeWriter();
 
 function typeWriter(){
 if(index<fullText.length){
-document.getElementById("typedText").innerHTML+=fullText.charAt(index);
-index++;
+typedText.innerHTML+=fullText.charAt(index++);
 setTimeout(typeWriter,35);
 }
 }
 
 function finishReading(){
-document.getElementById("letter").classList.remove("show");
-document.getElementById("gallery").style.display="block";
+letter.classList.remove("show");
+gallery.style.display="block";
 }
 
-// 🎵 muzyka
+/* 🎵 MUSIC */
 function fadeInMusic(){
 const m=document.getElementById("music");
 m.volume=0;
@@ -222,7 +260,7 @@ else clearInterval(i);
 },200);
 }
 
-// 🎉 konfetti
+/* 🎉 CONFETTI */
 const canvas=document.getElementById("confetti");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
@@ -247,23 +285,8 @@ ctx.fillRect(p.x,p.y,p.s,p.s);
 requestAnimationFrame(animate);
 }
 
-// 🖥️ admin tylko desktop
-if(!isMobile){
-document.addEventListener("keydown",(e)=>{
-if(e.ctrlKey&&e.shiftKey&&e.key==="A"){
-document.getElementById("adminBox").style.display="block";
-}
-});
-}
-
-function forceUnlock(){
-offset=birthday-new Date();
-updateCountdown();
-}
-
 syncTime().then(updateCountdown);
 </script>
 
 </body>
 </html>
-
