@@ -8,19 +8,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont;}
 
-body{
-background:black;
-color:white;
-overflow:hidden;
-animation:fadeIn 2s ease;
-}
+body{background:black;color:white;overflow:hidden;}
 
-@keyframes fadeIn{
-from{opacity:0;background:black;}
-to{opacity:1;}
-}
-
-/* cinematic pasy */
 body:before,body:after{
 content:"";
 position:fixed;
@@ -62,47 +51,26 @@ animation:drift 16s ease-in-out infinite alternate;
 100%{transform:translate3d(0,12px,0) scale(1.04);}
 }
 
-.content{
-text-align:center;
-padding:30px;
-max-width:420px;
-}
-
+.content{text-align:center;padding:30px;max-width:420px;}
 h1{font-size:30px;margin-bottom:15px;}
 h2{font-weight:400;line-height:1.4;}
 
-canvas{
-position:fixed;
-top:0;
-left:0;
-z-index:0;
-}
+canvas{position:fixed;top:0;left:0;z-index:0;}
 
-.timer{
-font-size:34px;
-margin-top:10px;
-transition:.8s;
-}
+.timer{font-size:34px;margin-top:10px;transition:.8s;}
+.timer.unlock{transform:scale(1.6);opacity:0;filter:blur(10px);}
 
-.timer.unlock{
-transform:scale(1.6);
-opacity:0;
-filter:blur(10px);
-}
-
-/* NAPISY KOŃCOWE AUTO START */
+/* credits */
 .credits{
 position:absolute;
 bottom:-120%;
 font-size:20px;
 text-align:center;
 opacity:.9;
-animation:credits 22s linear forwards;
-animation-play-state:paused;
 }
 
-.scene.active .credits{
-animation-play-state:running;
+.credits.start{
+animation:credits 22s linear forwards;
 }
 
 @keyframes credits{
@@ -125,7 +93,6 @@ z-index:9999;
 <body>
 
 <canvas id="stars"></canvas>
-
 <div class="admin" id="admin">ADMIN ▶</div>
 
 <div class="scene active" id="scene0">
@@ -137,24 +104,25 @@ z-index:9999;
 </div>
 
 <div class="scene" id="scene1"><div class="content"><h1>Zaczynamy...</h1></div></div>
-
 <div class="scene" id="scene2"><div class="content"><h2>Znamy się od 29.11.2025 ❤️</h2></div></div>
-
 <div class="scene" id="scene3"><div class="content"><h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2></div></div>
-
 <div class="scene" id="scene4"><div class="content"><h2>17.01.2026 ❤️ związek 💍</h2></div></div>
-
 <div class="scene" id="scene5"><div class="content"><h2>Zobaczymy co przyniesie przyszłość…</h2></div></div>
 
 <div class="scene" id="scene6">
 <div class="content">
 <h1>💌 Wszystkiego najlepszego</h1>
-<p>Wszystkiego najlepszego moja księżniczko... ❤️</p>
+<p>
+Wszystkiego najlepszego moja księżniczko, życzę ci wszystkiego co najlepsze
+i chcę żebyś pamiętała, że jesteś najlepsza na całym świecie i nie zmieniał się
+bo ideału się nie zmienia. Jeszcze raz wszystkiego najlepszego
+i dziękuje że jesteś ❤️
+</p>
 </div>
 </div>
 
 <div class="scene" id="scene7">
-<div class="credits">
+<div class="credits" id="credits">
 <p>🎬 Film życia</p><br>
 <p>Reżyseria: Dominik</p><br>
 <p>Główna rola: Maja💕</p><br>
@@ -206,19 +174,20 @@ scenes[current].classList.remove("active");
 current=i;
 scenes[current].classList.add("active");
 
+if(current===7){
+const c=document.getElementById("credits");
+c.classList.remove("start");
+void c.offsetWidth;
+c.classList.add("start");
+}
+
 if(navigator.vibrate)navigator.vibrate(40);
 }
 
-function nextScene(){
-showScene(current+1);
-}
+function nextScene(){showScene(current+1);}
 
 let startX=0;
-
-document.addEventListener("touchstart",e=>{
-startX=e.touches[0].clientX;
-},{passive:true});
-
+document.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},{passive:true});
 document.addEventListener("touchend",e=>{
 let endX=e.changedTouches[0].clientX;
 if(startX-endX>60)nextScene();
@@ -237,10 +206,7 @@ document.getElementById("admin").onclick=nextScene;
 const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
 
-function resize(){
-canvas.width=innerWidth;
-canvas.height=innerHeight;
-}
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
 resize();
 addEventListener("resize",resize);
 
