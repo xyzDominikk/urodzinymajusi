@@ -12,6 +12,12 @@ body{
 background:black;
 color:white;
 overflow:hidden;
+animation:fadeIn 2s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0;background:black;}
+to{opacity:1;}
 }
 
 /* cinematic pasy */
@@ -20,7 +26,7 @@ content:"";
 position:fixed;
 left:0;
 width:100%;
-height:8vh;
+height:7vh;
 background:black;
 z-index:1000;
 }
@@ -37,24 +43,24 @@ align-items:center;
 flex-direction:column;
 background:black;
 opacity:0;
-transform:scale(1.05);
-transition:1.2s ease;
+transform:scale(1.08) translateY(30px);
+transition:1.3s cubic-bezier(.2,.8,.2,1);
 }
 
 .scene.active{
 opacity:1;
-transform:scale(1);
+transform:scale(1) translateY(0);
 z-index:2;
 }
 
-/* slow camera drift */
+/* cinematic drift Apple style */
 .scene.active .content{
-animation:drift 12s ease-in-out infinite alternate;
+animation:drift 16s ease-in-out infinite alternate;
 }
 
 @keyframes drift{
-0%{transform:translateY(-8px) scale(1);}
-100%{transform:translateY(8px) scale(1.03);}
+0%{transform:translate3d(0,-12px,0) scale(1);}
+100%{transform:translate3d(0,12px,0) scale(1.04);}
 }
 
 .content{
@@ -63,8 +69,8 @@ padding:30px;
 max-width:420px;
 }
 
-h1{font-size:28px;margin-bottom:15px;}
-h2{font-weight:400;}
+h1{font-size:30px;margin-bottom:15px;}
+h2{font-weight:400;line-height:1.4;}
 
 canvas{
 position:fixed;
@@ -74,20 +80,31 @@ z-index:0;
 }
 
 .timer{
-font-size:30px;
+font-size:34px;
 margin-top:10px;
+transition:.8s;
+}
+
+.timer.unlock{
+transform:scale(1.6);
+opacity:0;
+filter:blur(10px);
 }
 
 .credits{
 position:absolute;
-bottom:-100%;
-animation:credits 20s linear forwards;
+bottom:-120%;
 font-size:20px;
 text-align:center;
+opacity:.9;
+}
+
+.credits.start{
+animation:credits 22s linear forwards;
 }
 
 @keyframes credits{
-from{bottom:-100%;}
+from{bottom:-120%;}
 to{bottom:120%;}
 }
 
@@ -107,11 +124,8 @@ z-index:9999;
 
 <canvas id="stars"></canvas>
 
-<div class="admin" id="admin">
-ADMIN ▶
-</div>
+<div class="admin" id="admin">ADMIN ▶</div>
 
-<!-- INTRO TIMER -->
 <div class="scene active" id="scene0">
 <div class="content">
 <h1>🎂 Odliczanie</h1>
@@ -120,48 +134,28 @@ ADMIN ▶
 </div>
 </div>
 
-<div class="scene" id="scene1">
-<div class="content">
-<h1>Zaczynamy...</h1>
-</div>
-</div>
+<div class="scene" id="scene1"><div class="content"><h1>Zaczynamy...</h1></div></div>
 
-<div class="scene" id="scene2">
-<div class="content">
-<h2>Znamy się od 29.11.2025 ❤️</h2>
-</div>
-</div>
+<div class="scene" id="scene2"><div class="content"><h2>Znamy się od 29.11.2025 ❤️</h2></div></div>
 
-<div class="scene" id="scene3">
-<div class="content">
-<h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2>
-</div>
-</div>
+<div class="scene" id="scene3"><div class="content"><h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2></div></div>
 
-<div class="scene" id="scene4">
-<div class="content">
-<h2>17.01.2026 ❤️ związek 💍</h2>
-</div>
-</div>
+<div class="scene" id="scene4"><div class="content"><h2>17.01.2026 ❤️ związek 💍</h2></div></div>
 
-<div class="scene" id="scene5">
-<div class="content">
-<h2>Zobaczymy co przyniesie przyszłość…</h2>
-</div>
-</div>
+<div class="scene" id="scene5"><div class="content"><h2>Zobaczymy co przyniesie przyszłość…</h2></div></div>
 
 <div class="scene" id="scene6">
 <div class="content">
 <h1>💌 Wszystkiego najlepszego</h1>
-<p> Wszystkiego najlepszego moja księżniczko, życzę ci wszystkiego co najlepsze i chcę żebyś pamiętała, że jesteś najlepsza na całym świecie i nie zmieniał się bo ideału się nie zmienia. Jeszcze raz wszystkiego najlepszego i dziękuje że jeteś❤️</p>
+<p>Wszystkiego najlepszego moja księżniczko... ❤️</p>
 </div>
 </div>
 
 <div class="scene" id="scene7">
-<div class="credits">
+<div class="credits" id="credits">
 <p>🎬 Film życia</p><br>
-<p>Reżyseria: Dominik </p><br>
-<p>Główna rola: Majaa💕</p><br>
+<p>Reżyseria: Dominik</p><br>
+<p>Główna rola: Maja💕</p><br>
 <p>Dziękuję za wszystko...</p>
 </div>
 </div>
@@ -189,6 +183,7 @@ const t=document.getElementById("timer");
 
 if(diff<=0){
 t.innerText="🎉 GOTOWE";
+t.classList.add("unlock");
 return;
 }
 
@@ -216,7 +211,7 @@ scenes[current].classList.add("active");
 if(navigator.vibrate)navigator.vibrate(40);
 
 if(current===7){
-scenes[current].classList.add("active");
+document.getElementById("credits").classList.add("start");
 }
 }
 
@@ -229,20 +224,20 @@ let startX=0;
 
 document.addEventListener("touchstart",e=>{
 startX=e.touches[0].clientX;
-});
+},{passive:true});
 
 document.addEventListener("touchend",e=>{
 let endX=e.changedTouches[0].clientX;
 if(startX-endX>60)nextScene();
-});
+},{passive:true});
 
-/* KLIK TIMER */
+/* TIMER CLICK */
 document.getElementById("scene0").onclick=()=>{
 const now=new Date(new Date().getTime()+offset);
-if(now>=birthday)nextScene();
+if(now>=birthday)setTimeout(nextScene,600);
 };
 
-/* ADMIN tylko desktop */
+/* ADMIN */
 if(!/Mobi|Android|iPhone/i.test(navigator.userAgent)){
 document.getElementById("admin").style.display="block";
 document.getElementById("admin").onclick=nextScene;
@@ -255,19 +250,12 @@ canvas.width=innerWidth;
 canvas.height=innerHeight;
 
 let stars=[];
-
 for(let i=0;i<120;i++){
-stars.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-r:Math.random()*1.5
-});
+stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.5});
 }
 
 canvas.addEventListener("touchmove",e=>{
-const x=e.touches[0].clientX;
-const y=e.touches[0].clientY;
-stars.push({x,y,r:2});
+stars.push({x:e.touches[0].clientX,y:e.touches[0].clientY,r:2});
 });
 
 function drawStars(){
@@ -288,3 +276,4 @@ syncTime().then(updateTimer);
 
 </body>
 </html>
+
