@@ -6,7 +6,6 @@
 <title>Urodziny Majci ❤️</title>
 
 <style>
-
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 body{
@@ -31,9 +30,7 @@ background:linear-gradient(180deg,#ff7eb3,#ff758c);
 transition:0.6s;
 }
 
-.pulse{
-animation:pulse 2.5s ease-in-out infinite;
-}
+.pulse{animation:pulse 2.5s ease-in-out infinite;}
 
 @keyframes pulse{
 0%{background:linear-gradient(180deg,#ff7eb3,#ff758c);}
@@ -41,11 +38,7 @@ animation:pulse 2.5s ease-in-out infinite;
 100%{background:linear-gradient(180deg,#ff7eb3,#ff758c);}
 }
 
-.center{
-text-align:center;
-margin-top:70px;
-padding:20px;
-}
+.center{text-align:center;margin-top:70px;padding:20px;}
 
 button{
 padding:14px 18px;
@@ -100,7 +93,6 @@ padding:15px;
 border-radius:12px;
 z-index:999;
 }
-
 </style>
 </head>
 
@@ -146,6 +138,8 @@ let offset=0;
 let unlocked=false;
 let confettiDone=false;
 
+const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 const fullText=`Wszystkiego najlepszego moja księżniczko 💞
 Życzę Ci wszystkiego co najlepsze.
 Pamiętaj że jesteś najlepsza na świecie
@@ -162,7 +156,7 @@ offset=new Date(d.datetime)-new Date();
 }catch{}
 }
 
-function vibrate(p){if(navigator.vibrate)navigator.vibrate(p);}
+function vibrate(p){if(navigator.vibrate)vibrate=navigator.vibrate(p);}
 
 function updateCountdown(){
 
@@ -174,14 +168,13 @@ if(diff<=0 && !unlocked){
 unlocked=true;
 
 document.getElementById("phone").classList.add("pulse");
-
 document.getElementById("countdown").innerText="🎉 Wszystkiego najlepszego!";
 
 const btn=document.getElementById("openBtn");
 btn.disabled=false;
 btn.innerText="💌 Otwórz list";
 
-vibrate([120,40,120]);
+navigator.vibrate?.([120,40,120]);
 startConfettiOnce();
 fadeInMusic();
 
@@ -204,7 +197,7 @@ setInterval(updateCountdown,1000);
 
 function openLetter(){
 document.getElementById("letter").classList.add("show");
-vibrate(40);
+navigator.vibrate?.(40);
 typeWriter();
 }
 
@@ -219,7 +212,7 @@ setTimeout(typeWriter,25);
 function finishReading(){
 document.getElementById("letter").classList.remove("show");
 document.getElementById("gallery").style.display="block";
-vibrate([50,30,50]);
+navigator.vibrate?.([50,30,50]);
 }
 
 function fadeInMusic(){
@@ -228,10 +221,7 @@ music.volume=0;
 music.play().catch(()=>{});
 let v=0;
 const fade=setInterval(()=>{
-if(v<1){
-v+=0.05;
-music.volume=v;
-}else clearInterval(fade);
+if(v<1){v+=0.05;music.volume=v;}else clearInterval(fade);
 },200);
 }
 
@@ -239,6 +229,7 @@ const canvas=document.getElementById("confetti");
 const ctx=canvas.getContext("2d");
 canvas.width=390;
 canvas.height=844;
+
 let pieces=[];
 
 function startConfettiOnce(){
@@ -247,44 +238,35 @@ if(confettiDone)return;
 confettiDone=true;
 
 for(let i=0;i<160;i++){
-pieces.push({
-x:Math.random()*390,
-y:-20,
-s:Math.random()*8+4,
-v:Math.random()*3+2
-});
+pieces.push({x:Math.random()*390,y:-20,s:Math.random()*8+4,v:Math.random()*3+2});
 }
 animate();
 }
 
 function animate(){
 ctx.clearRect(0,0,390,844);
-pieces.forEach(p=>{
-p.y+=p.v;
-ctx.fillRect(p.x,p.y,p.s,p.s);
-});
+pieces.forEach(p=>{p.y+=p.v;ctx.fillRect(p.x,p.y,p.s,p.s);});
 requestAnimationFrame(animate);
 }
 
-// 🔐 HALO ADMIN
-let holdTimer;
+// 🖥️ ADMIN tylko komputer
+if(!isMobile){
 
-document.addEventListener("touchstart",(e)=>{
-if(e.touches[0].clientX<60 && e.touches[0].clientY<60){
-holdTimer=setTimeout(()=>{
+document.addEventListener("keydown",(e)=>{
+
+if(e.ctrlKey && e.shiftKey && e.key==="A"){
 document.getElementById("adminBox").style.display="block";
-vibrate(60);
-},3000);
 }
+
 });
 
-document.addEventListener("touchend",()=>clearTimeout(holdTimer));
+}
 
 function unlockAdmin(){
 
 const pass=document.getElementById("adminPass").value;
 
-if(pass==="Dominik123"){
+if(pass==="halo123"){
 
 unlocked=true;
 
@@ -297,13 +279,13 @@ btn.innerText="💌 Otwórz list";
 
 startConfettiOnce();
 fadeInMusic();
-vibrate([120,40,120]);
 
 document.getElementById("adminBox").style.display="none";
 
 }else{
 alert("❌ złe hasło");
 }
+
 }
 
 syncTime().then(updateCountdown);
