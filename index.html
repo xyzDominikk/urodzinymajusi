@@ -2,152 +2,147 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Urodziny Majci ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urodziny ❤️</title>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-
 body{
 margin:0;
 font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-background:black;
+background:linear-gradient(135deg,#ff758c,#ff7eb3);
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 color:white;
 overflow:hidden;
+transition:0.5s;
 }
 
 .phone{
-width:390px;
-height:844px;
-border-radius:40px;
-overflow:hidden;
-position:relative;
-background:linear-gradient(180deg,#ff7eb3,#ff758c);
-transition:0.6s;
+width:360px;
+background:rgba(0,0,0,0.35);
+padding:30px;
+border-radius:30px;
+text-align:center;
+backdrop-filter:blur(20px);
 }
 
-.pulse{animation:pulse 2.5s ease-in-out infinite;}
+.pulse{
+animation:pulse 2s infinite;
+}
 
 @keyframes pulse{
-0%{background:linear-gradient(180deg,#ff7eb3,#ff758c);}
-50%{background:linear-gradient(180deg,#ff5e7e,#ff99cc);}
-100%{background:linear-gradient(180deg,#ff7eb3,#ff758c);}
+0%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
+50%{background:linear-gradient(135deg,#ff5e7e,#ff99cc);}
+100%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
 }
-
-.center{text-align:center;margin-top:70px;padding:20px;}
 
 button{
-padding:14px 18px;
+padding:14px 20px;
 border:none;
-border-radius:18px;
+border-radius:14px;
 font-size:16px;
 margin-top:15px;
-background:white;
-color:black;
 }
 
-button:disabled{opacity:0.5;}
+button:disabled{opacity:0.4;}
 
 .letter{
-position:absolute;
+position:fixed;
 bottom:-100%;
-left:0;
-right:0;
-height:72%;
+left:50%;
+transform:translateX(-50%);
+width:320px;
 background:white;
 color:black;
-border-radius:30px 30px 0 0;
-padding:20px;
-transition:0.9s cubic-bezier(.2,.8,.2,1);
-overflow:auto;
+padding:25px;
+border-radius:20px;
+transition:1s;
 }
 
-.letter.show{bottom:0;}
+.letter.show{
+bottom:50%;
+transform:translate(-50%,50%);
+}
 
 .gallery{display:none;margin-top:15px;}
-
-.gallery img{
-width:100px;
-border-radius:16px;
-margin:5px;
-}
+.gallery img{width:90px;border-radius:12px;margin:4px;}
 
 canvas{
-position:absolute;
+position:fixed;
 top:0;
 left:0;
 pointer-events:none;
 }
 
+/* animacja końca timera */
+.countdown-end{
+animation:countdownExit 3s forwards;
+}
+
+@keyframes countdownExit{
+0%{transform:scale(1);opacity:1;}
+50%{transform:scale(1.4);opacity:1;}
+100%{transform:scale(0.6);opacity:0;filter:blur(6px);}
+}
+
+/* admin */
 #adminBox{
-display:none;
-position:absolute;
+position:fixed;
 top:20px;
-left:20px;
+right:20px;
 background:black;
 padding:15px;
-border-radius:12px;
-z-index:999;
+border-radius:15px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="phone" id="phone">
-
 <canvas id="confetti"></canvas>
 
-<div class="center">
-<h2>🎂 Urodziny już za:</h2>
-<div id="countdown">Ładowanie...</div>
+<div class="phone" id="phone">
+<h2 id="countdown">Ładowanie...</h2>
 
-<button id="openBtn" disabled onclick="openLetter()">🔒 List zablokowany</button>
+<button id="openBtn" onclick="openLetter()" disabled>
+🔒 List zablokowany
+</button>
 
 <div class="gallery" id="gallery">
 <h3>🖼️ Wspomnienia</h3>
-<img src="https://picsum.photos/200?1">
-<img src="https://picsum.photos/200?2">
-<img src="https://picsum.photos/200?3">
+<img src="https://picsum.photos/100?1">
+<img src="https://picsum.photos/100?2">
+<img src="https://picsum.photos/100?3">
 </div>
 </div>
 
 <div class="letter" id="letter">
-<h3>💌 List</h3>
+<h2>💌</h2>
 <p id="typedText"></p>
 <button onclick="finishReading()">Zamknij</button>
 </div>
 
 <div id="adminBox">
-<input id="adminPass" placeholder="hasło..." style="padding:8px;border-radius:8px;border:none;">
-<button onclick="unlockAdmin()">OK</button>
+<button onclick="forceUnlock()">🔓 Odblokuj</button>
 </div>
 
 <audio id="music" src="muzyka.mp3"></audio>
 
-</div>
-
 <script>
-
 const birthday=new Date(2026,1,22,0,0,0);
 let offset=0;
 let unlocked=false;
 let confettiDone=false;
 
-const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const isMobile=/iPhone|Android|iPad/i.test(navigator.userAgent);
 
-const fullText=`Wszystkiego najlepszego moja księżniczko 💞
-Życzę Ci wszystkiego co najlepsze.
-Pamiętaj że jesteś najlepsza na świecie
-i nie zmieniaj się — bo ideału się nie zmienia.
-Dziękuję że jesteś ❤️`;
-
+const fullText=`Tu wstaw swój list ❤️`;
 let index=0;
 
+// 🌐 czas z internetu
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -156,48 +151,49 @@ offset=new Date(d.datetime)-new Date();
 }catch{}
 }
 
-function vibrate(p){if(navigator.vibrate)vibrate=navigator.vibrate(p);}
+function now(){return new Date(new Date().getTime()+offset);}
 
+// ⏳ odliczanie
 function updateCountdown(){
 
-const now=new Date(new Date().getTime()+offset);
-const diff=birthday-now;
+const diff=birthday-now();
+const el=document.getElementById("countdown");
 
 if(diff<=0 && !unlocked){
 
 unlocked=true;
+el.innerText="🎉 Wszystkiego najlepszego!";
+el.classList.add("countdown-end");
+
+setTimeout(()=>{el.style.display="none";},3000);
 
 document.getElementById("phone").classList.add("pulse");
-document.getElementById("countdown").innerText="🎉 Wszystkiego najlepszego!";
 
 const btn=document.getElementById("openBtn");
 btn.disabled=false;
 btn.innerText="💌 Otwórz list";
 
 navigator.vibrate?.([120,40,120]);
+
 startConfettiOnce();
 fadeInMusic();
-
 return;
 }
 
 if(diff>0){
-
 const d=Math.floor(diff/(1000*60*60*24));
 const h=Math.floor((diff/(1000*60*60))%24);
 const m=Math.floor((diff/(1000*60))%60);
 const s=Math.floor((diff/1000)%60);
-
-document.getElementById("countdown").innerText=
-d+"d "+h+"h "+m+"m "+s+"s";
+el.innerText=`${d}d ${h}h ${m}m ${s}s`;
 }
 }
 
 setInterval(updateCountdown,1000);
 
+// 💌 list
 function openLetter(){
 document.getElementById("letter").classList.add("show");
-navigator.vibrate?.(40);
 typeWriter();
 }
 
@@ -205,92 +201,69 @@ function typeWriter(){
 if(index<fullText.length){
 document.getElementById("typedText").innerHTML+=fullText.charAt(index);
 index++;
-setTimeout(typeWriter,25);
+setTimeout(typeWriter,35);
 }
 }
 
 function finishReading(){
 document.getElementById("letter").classList.remove("show");
 document.getElementById("gallery").style.display="block";
-navigator.vibrate?.([50,30,50]);
 }
 
+// 🎵 muzyka
 function fadeInMusic(){
-const music=document.getElementById("music");
-music.volume=0;
-music.play().catch(()=>{});
+const m=document.getElementById("music");
+m.volume=0;
+m.play().catch(()=>{});
 let v=0;
-const fade=setInterval(()=>{
-if(v<1){v+=0.05;music.volume=v;}else clearInterval(fade);
+const i=setInterval(()=>{
+if(v<1){v+=0.05;m.volume=v;}
+else clearInterval(i);
 },200);
 }
 
+// 🎉 konfetti
 const canvas=document.getElementById("confetti");
 const ctx=canvas.getContext("2d");
-canvas.width=390;
-canvas.height=844;
-
+canvas.width=innerWidth;
+canvas.height=innerHeight;
 let pieces=[];
 
 function startConfettiOnce(){
-
-if(confettiDone)return;
+if(confettiDone) return;
 confettiDone=true;
-
-for(let i=0;i<160;i++){
-pieces.push({x:Math.random()*390,y:-20,s:Math.random()*8+4,v:Math.random()*3+2});
+for(let i=0;i<150;i++){
+pieces.push({x:Math.random()*canvas.width,y:-20,s:Math.random()*8+4,v:Math.random()*3+2});
 }
 animate();
 }
 
 function animate(){
-ctx.clearRect(0,0,390,844);
-pieces.forEach(p=>{p.y+=p.v;ctx.fillRect(p.x,p.y,p.s,p.s);});
+ctx.clearRect(0,0,canvas.width,canvas.height);
+pieces.forEach(p=>{
+p.y+=p.v;
+ctx.fillRect(p.x,p.y,p.s,p.s);
+});
 requestAnimationFrame(animate);
 }
 
-// 🖥️ ADMIN tylko komputer
+// 🖥️ admin tylko desktop
 if(!isMobile){
-
 document.addEventListener("keydown",(e)=>{
-
-if(e.ctrlKey && e.shiftKey && e.key==="A"){
+if(e.ctrlKey&&e.shiftKey&&e.key==="A"){
 document.getElementById("adminBox").style.display="block";
 }
-
 });
-
 }
 
-function unlockAdmin(){
-
-const pass=document.getElementById("adminPass").value;
-
-if(pass==="dominik123"){
-
-unlocked=true;
-
-document.getElementById("phone").classList.add("pulse");
-document.getElementById("countdown").innerText="🧪 TRYB TESTOWY";
-
-const btn=document.getElementById("openBtn");
-btn.disabled=false;
-btn.innerText="💌 Otwórz list";
-
-startConfettiOnce();
-fadeInMusic();
-
-document.getElementById("adminBox").style.display="none";
-
-}else{
-alert("❌ złe hasło");
-}
-
+function forceUnlock(){
+offset=birthday-new Date();
+updateCountdown();
 }
 
 syncTime().then(updateCountdown);
-
 </script>
 
 </body>
 </html>
+
