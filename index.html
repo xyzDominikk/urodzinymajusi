@@ -188,7 +188,7 @@ let adminUnlocked=false;
 /* ADMIN BUTTON */
 document.getElementById("admin").onclick=()=>{
 const p=prompt("Hasło:");
-if(p==="dominik123"){
+if(p==="hala"){
 adminUnlocked=true;
 alert("Admin aktywny");
 }
@@ -215,9 +215,6 @@ music.volume=v;
 }else clearInterval(fade);
 },200);
 }
-
-document.addEventListener("touchstart",unlockMusic,{once:true});
-document.addEventListener("click",unlockMusic,{once:true});
 
 /* TIMER */
 let offset=0;
@@ -298,7 +295,10 @@ if(startX-endX>60)nextScene();
 /* TIMER CLICK */
 document.getElementById("scene0").onclick=()=>{
 const now=new Date(new Date().getTime()+offset);
-if(now>=birthday)setTimeout(()=>{if(!isMobile||adminUnlocked)nextScene();},600);
+if(now>=birthday){
+unlockMusic();
+setTimeout(()=>{if(!isMobile||adminUnlocked)nextScene();},600);
+}
 };
 
 /* LETTER */
@@ -353,3 +353,4 @@ syncTime().then(updateTimer);
 
 </body>
 </html>
+
