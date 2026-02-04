@@ -7,7 +7,7 @@
 <style>
 body{
 font-family:Arial;
-background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+background:linear-gradient(135deg,#ff758c,#ff7eb3);
 display:flex;
 justify-content:center;
 align-items:center;
@@ -19,19 +19,25 @@ overflow:hidden;
 }
 
 .container{
-background:rgba(0,0,0,0.3);
+background:rgba(0,0,0,0.35);
 padding:40px;
 border-radius:20px;
 backdrop-filter:blur(10px);
+width:320px;
+}
+
+#countdown{
+font-size:24px;
+margin:20px 0;
 }
 
 button{
-padding:15px 25px;
+padding:12px 20px;
 border:none;
 border-radius:10px;
-margin:10px;
-font-size:18px;
+font-size:16px;
 cursor:pointer;
+margin-top:10px;
 transition:0.3s;
 }
 
@@ -39,19 +45,29 @@ button:hover{
 transform:scale(1.1);
 }
 
-.hidden{
-display:none;
+.letter{
+position:fixed;
+bottom:-100%;
+left:50%;
+transform:translateX(-50%);
+width:350px;
+background:white;
+color:black;
+padding:25px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+transition:1s;
 }
 
-.heart{
-position:absolute;
-font-size:20px;
-animation:fall 4s linear forwards;
+.letter.show{
+bottom:50%;
+transform:translate(-50%,50%);
 }
 
-@keyframes fall{
-0%{transform:translateY(-100px);}
-100%{transform:translateY(100vh);}
+.close{
+margin-top:15px;
+background:#ff758c;
+color:white;
 }
 </style>
 
@@ -61,44 +77,59 @@ animation:fall 4s linear forwards;
 
 <div class="container">
 
-<h1>🎂 Wszystkiego najlepszego ❤️</h1>
+<h1>🎂 Urodziny już za:</h1>
 
-<p>Tu wstaw swój tekst 😏</p>
+<div id="countdown">Ładowanie...</div>
 
-<button onclick="showSurprise()">🎁 Kliknij po niespodziankę</button>
-<button onclick="startHearts()">❤️ Deszcz serc</button>
+<button onclick="openLetter()">💌 Otwórz list</button>
 
-<div id="surprise" class="hidden">
-<h2>💌 Niespodzianka!</h2>
-<p>Tu możesz dać romantyczny tekst 😉</p>
-<img src="https://picsum.photos/200" style="border-radius:15px;">
 </div>
 
+<div id="letter" class="letter">
+<h2>💖 List dla Ciebie</h2>
+<p>
+TU WPISZ SWÓJ TEKST 😄  
+możesz zrobić romantyczny list,
+historię relacji albo życzenia.
+</p>
+
+<button class="close" onclick="closeLetter()">Zamknij</button>
 </div>
 
 <script>
 
-function showSurprise(){
-document.getElementById("surprise")
-.classList.remove("hidden");
+// 📅 USTAW DATĘ URODZIN (rok,miesiąc-1,dzień)
+const birthday = new Date(2026,2,22); 
+
+function updateCountdown(){
+
+const now = new Date();
+const diff = birthday - now;
+
+if(diff <= 0){
+document.getElementById("countdown").innerText="🎉 To już dziś!";
+return;
 }
 
-function startHearts(){
+const days = Math.floor(diff/(1000*60*60*24));
+const hours = Math.floor((diff/(1000*60*60))%24);
+const minutes = Math.floor((diff/(1000*60))%60);
+const seconds = Math.floor((diff/1000)%60);
 
-for(let i=0;i<30;i++){
-
-const heart=document.createElement("div");
-heart.className="heart";
-heart.innerText="❤️";
-
-heart.style.left=Math.random()*100+"vw";
-
-document.body.appendChild(heart);
-
-setTimeout(()=>heart.remove(),4000);
+document.getElementById("countdown").innerText =
+days+"d "+hours+"h "+minutes+"m "+seconds+"s";
 
 }
 
+setInterval(updateCountdown,1000);
+updateCountdown();
+
+function openLetter(){
+document.getElementById("letter").classList.add("show");
+}
+
+function closeLetter(){
+document.getElementById("letter").classList.remove("show");
 }
 
 </script>
