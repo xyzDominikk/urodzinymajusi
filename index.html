@@ -2,184 +2,135 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>❤️</title>
 
 <style>
-*{box-sizing:border-box}
-
 body{
 margin:0;
-font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-background:linear-gradient(135deg,#ff758c,#ff7eb3);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-overflow:hidden;
+background:black;
 color:white;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+overflow:hidden;
+touch-action:pan-y;
 }
 
-/* 🌌 INTRO */
-#intro{
+.slide{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-background:black;
 display:flex;
 justify-content:center;
 align-items:center;
-z-index:100;
-animation:introOut 1.5s ease forwards;
-animation-delay:4s;
-}
-
-.intro-text{
+flex-direction:column;
 text-align:center;
-font-size:28px;
-letter-spacing:2px;
-animation:introText 4s ease forwards;
-}
-
-@keyframes introText{
-0%{opacity:0;transform:scale(0.9);}
-40%{opacity:1;transform:scale(1);}
-100%{opacity:1;transform:scale(1.05);}
-}
-
-@keyframes introOut{
-to{
-opacity:0;
-filter:blur(20px);
-pointer-events:none;
-}
-}
-
-/* 📱 PHONE */
-.phone{
-width:360px;
-background:rgba(0,0,0,0.35);
 padding:30px;
-border-radius:32px;
-text-align:center;
-backdrop-filter:blur(20px);
-display:none;
+opacity:0;
+transform:scale(1.2);
+transition:0.9s cubic-bezier(.22,1,.36,1);
 }
 
-.showApp{display:block;}
-
-.pulse{
-animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-0%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
-50%{background:linear-gradient(135deg,#ff5e7e,#ff99cc);}
-100%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
+.slide.active{
+opacity:1;
+transform:scale(1);
 }
 
 button{
-padding:14px 20px;
+padding:14px 22px;
 border:none;
 border-radius:16px;
 font-size:16px;
-margin-top:15px;
+margin-top:20px;
 }
 
-button:disabled{opacity:.4}
-
-.countdown-end{
-animation:countdownExit 3s forwards;
-}
-
-@keyframes countdownExit{
-0%{transform:scale(1);opacity:1;}
-50%{transform:scale(1.4);}
-100%{transform:scale(0.6);opacity:0;filter:blur(6px);}
-}
-
-/* 💌 LETTER */
-.letter{
-position:fixed;
-bottom:-100%;
-left:50%;
-transform:translateX(-50%);
-width:320px;
+/* gwiazdy */
+.star{
+position:absolute;
+width:3px;
+height:3px;
 background:white;
-color:black;
-padding:25px;
-border-radius:20px;
-transition:1s;
-z-index:10;
+border-radius:50%;
+opacity:.7;
+transition:.3s;
 }
 
-.letter.show{
-bottom:50%;
-transform:translate(-50%,50%);
+/* fake loading */
+.loader{
+font-size:20px;
+opacity:.7;
 }
 
-.gallery{display:none;margin-top:15px;}
-.gallery img{width:90px;border-radius:12px;margin:4px;}
-
-canvas{
+/* admin */
+#admin{
 position:fixed;
-top:0;
-left:0;
-pointer-events:none;
+top:20px;
+right:20px;
+background:#111;
+padding:14px;
+border-radius:12px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🌌 INTRO -->
-<div id="intro">
-<div class="intro-text">
-Dla Ciebie ❤️<br>
-<small style="opacity:.6">22.02</small>
-</div>
-</div>
+<div id="stars"></div>
 
-<canvas id="confetti"></canvas>
-
-<!-- 📱 APP -->
-<div class="phone" id="phone">
-<h2 id="countdown">Ładowanie...</h2>
-
-<button id="openBtn" onclick="openLetter()" disabled>
-🔒 List zablokowany
-</button>
-
-<div class="gallery" id="gallery">
-<h3>🖼️ Wspomnienia</h3>
-<img src="https://picsum.photos/100?1">
-<img src="https://picsum.photos/100?2">
-<img src="https://picsum.photos/100?3">
-</div>
+<!-- TIMER -->
+<div class="slide active" id="slide0">
+<h1 id="countdown">Ładowanie...</h1>
+<button id="startBtn" disabled onclick="nextSlide()">Wejdź ❤️</button>
 </div>
 
-<!-- 💌 LETTER -->
-<div class="letter" id="letter">
-<h2>💌</h2>
-<p id="typedText"></p>
-<button onclick="finishReading()">Zamknij</button>
+<!-- INTRO -->
+<div class="slide" id="slide1">
+<h1>Dla Ciebie ❤️</h1>
+</div>
+
+<div class="slide" id="slide2">
+<h2 id="daysKnown"></h2>
+</div>
+
+<div class="slide" id="slide3">
+<h2>Spotkaliśmy się dnia 29.12.2025<br>(od tego dnia jestem najszczęśliwszy!!)</h2>
+</div>
+
+<div class="slide" id="slide4">
+<h2>17.01.2026 ❤️ Wejście w związek</h2>
+</div>
+
+<div class="slide" id="slide5">
+<h2>Zobaczymy jak potoczy się dalej…</h2>
+</div>
+
+<div class="slide" id="slide6">
+<div class="loader">💔 Analizuję wspomnienia…</div>
+</div>
+
+<div class="slide" id="slide7">
+<h2>💌 Twoje życzenia tutaj</h2>
+</div>
+
+<div id="admin">
+<button onclick="forceUnlock()">🔓 unlock</button>
+<button onclick="nextSlide()">⏭ skip</button>
 </div>
 
 <audio id="music" src="muzyka.mp3"></audio>
 
 <script>
-/* ⏰ DATA */
 const birthday=new Date(2026,1,22,0,0,0);
 let offset=0;
 let unlocked=false;
-let confettiDone=false;
+let current=0;
+let startX=0;
 
-const fullText=`Tu wklej swój list ❤️`;
-let index=0;
+const isMobile=/iPhone|Android|iPad/i.test(navigator.userAgent);
 
-/* 🌐 TIME */
+/* 🌐 internet time */
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -189,33 +140,15 @@ offset=new Date(d.datetime)-new Date();
 }
 const now=()=>new Date(new Date().getTime()+offset);
 
-/* 🌌 INTRO → APP */
-setTimeout(()=>{
-document.getElementById("phone").classList.add("showApp");
-},4500);
-
-/* ⏳ COUNTDOWN */
+/* ⏳ timer */
 function updateCountdown(){
 const diff=birthday-now();
-const el=document.getElementById("countdown");
 
 if(diff<=0 && !unlocked){
 unlocked=true;
-el.innerText="🎉 Wszystkiego najlepszego!";
-el.classList.add("countdown-end");
-
-setTimeout(()=>el.style.display="none",3000);
-
-document.body.classList.add("pulse");
-
-const btn=document.getElementById("openBtn");
-btn.disabled=false;
-btn.innerText="💌 Otwórz list";
-
-navigator.vibrate?.([120,40,120]);
-
-startConfettiOnce();
-fadeInMusic();
+countdown.innerText="🎉 Możesz wejść ❤️";
+startBtn.disabled=false;
+navigator.vibrate?.(30);
 return;
 }
 
@@ -224,32 +157,65 @@ const d=Math.floor(diff/(1000*60*60*24));
 const h=Math.floor((diff/(1000*60*60))%24);
 const m=Math.floor((diff/(1000*60))%60);
 const s=Math.floor((diff/1000)%60);
-el.innerText=`${d}d ${h}h ${m}m ${s}s`;
+countdown.innerText=`${d}d ${h}h ${m}m ${s}s`;
 }
 }
-
 setInterval(updateCountdown,1000);
 
-/* 💌 LETTER */
-function openLetter(){
-document.getElementById("letter").classList.add("show");
-typeWriter();
+/* 🎬 cinematic slide change */
+function nextSlide(){
+document.getElementById("slide"+current).classList.remove("active");
+current++;
+const next=document.getElementById("slide"+current);
+if(next) next.classList.add("active");
+
+navigator.vibrate?.(20);
+
+if(current===1) startMusic();
+
+if(current===2){
+const start=new Date(2025,10,29);
+const days=Math.floor((now()-start)/(1000*60*60*24));
+daysKnown.innerText=`Znamy się ${days} dni ❤️`;
 }
 
-function typeWriter(){
-if(index<fullText.length){
-typedText.innerHTML+=fullText.charAt(index++);
-setTimeout(typeWriter,35);
+if(current===6){
+setTimeout(nextSlide,3000);
 }
 }
 
-function finishReading(){
-letter.classList.remove("show");
-gallery.style.display="block";
+/* 📱 swipe */
+document.addEventListener("touchstart",e=>{
+startX=e.touches[0].clientX;
+});
+
+document.addEventListener("touchend",e=>{
+let dx=e.changedTouches[0].clientX-startX;
+if(dx<-60) nextSlide();
+});
+
+/* 🌌 gwiazdy */
+const starBox=document.getElementById("stars");
+for(let i=0;i<120;i++){
+let s=document.createElement("div");
+s.className="star";
+s.style.left=Math.random()*100+"%";
+s.style.top=Math.random()*100+"%";
+starBox.appendChild(s);
 }
 
-/* 🎵 MUSIC */
-function fadeInMusic(){
+document.addEventListener("touchmove",e=>{
+document.querySelectorAll(".star").forEach(st=>{
+let dx=st.offsetLeft-e.touches[0].clientX;
+let dy=st.offsetTop-e.touches[0].clientY;
+let dist=Math.sqrt(dx*dx+dy*dy);
+if(dist<80) st.style.transform="scale(2)";
+else st.style.transform="scale(1)";
+});
+});
+
+/* 🎵 music */
+function startMusic(){
 const m=document.getElementById("music");
 m.volume=0;
 m.play().catch(()=>{});
@@ -260,29 +226,18 @@ else clearInterval(i);
 },200);
 }
 
-/* 🎉 CONFETTI */
-const canvas=document.getElementById("confetti");
-const ctx=canvas.getContext("2d");
-canvas.width=innerWidth;
-canvas.height=innerHeight;
-let pieces=[];
-
-function startConfettiOnce(){
-if(confettiDone) return;
-confettiDone=true;
-for(let i=0;i<150;i++){
-pieces.push({x:Math.random()*canvas.width,y:-20,s:Math.random()*8+4,v:Math.random()*3+2});
+/* 🧠 admin */
+if(!isMobile){
+document.addEventListener("keydown",(e)=>{
+if(e.ctrlKey&&e.shiftKey&&e.key==="A"){
+admin.style.display="block";
 }
-animate();
-}
-
-function animate(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-pieces.forEach(p=>{
-p.y+=p.v;
-ctx.fillRect(p.x,p.y,p.s,p.s);
 });
-requestAnimationFrame(animate);
+}
+
+function forceUnlock(){
+offset=birthday-new Date();
+updateCountdown();
 }
 
 syncTime().then(updateCountdown);
