@@ -12,10 +12,10 @@ background:black;
 color:white;
 font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 overflow:hidden;
-touch-action:pan-y;
 }
 
-.slide{
+/* 🎬 scena filmowa */
+.scene{
 position:fixed;
 top:0;
 left:0;
@@ -24,42 +24,42 @@ height:100%;
 display:flex;
 justify-content:center;
 align-items:center;
-flex-direction:column;
 text-align:center;
-padding:30px;
+padding:40px;
 opacity:0;
 transform:scale(1.2);
-transition:0.9s cubic-bezier(.22,1,.36,1);
+filter:blur(20px);
+transition:1.6s cubic-bezier(.22,1,.36,1);
 }
 
-.slide.active{
+.scene.active{
 opacity:1;
 transform:scale(1);
+filter:blur(0);
 }
 
 button{
-padding:14px 22px;
+padding:16px 24px;
 border:none;
-border-radius:16px;
-font-size:16px;
-margin-top:20px;
+border-radius:18px;
+font-size:17px;
+margin-top:25px;
 }
 
-/* gwiazdy */
+/* 🌌 gwiazdy */
 .star{
 position:absolute;
-width:3px;
-height:3px;
+width:2px;
+height:2px;
 background:white;
 border-radius:50%;
-opacity:.7;
-transition:.3s;
+opacity:.6;
+animation:twinkle 3s infinite alternate;
 }
 
-/* fake loading */
-.loader{
-font-size:20px;
-opacity:.7;
+@keyframes twinkle{
+from{opacity:.2}
+to{opacity:.8}
 }
 
 /* admin */
@@ -68,8 +68,8 @@ position:fixed;
 top:20px;
 right:20px;
 background:#111;
-padding:14px;
-border-radius:12px;
+padding:15px;
+border-radius:14px;
 display:none;
 }
 </style>
@@ -79,44 +79,46 @@ display:none;
 
 <div id="stars"></div>
 
-<!-- TIMER -->
-<div class="slide active" id="slide0">
+<!-- ⏳ TIMER -->
+<div class="scene active" id="scene0">
+<div>
 <h1 id="countdown">Ładowanie...</h1>
-<button id="startBtn" disabled onclick="nextSlide()">Wejdź ❤️</button>
+<button id="startBtn" disabled onclick="nextScene()">Wejdź ❤️</button>
+</div>
 </div>
 
-<!-- INTRO -->
-<div class="slide" id="slide1">
+<!-- 🎬 INTRO -->
+<div class="scene" id="scene1">
 <h1>Dla Ciebie ❤️</h1>
 </div>
 
-<div class="slide" id="slide2">
+<div class="scene" id="scene2">
 <h2 id="daysKnown"></h2>
 </div>
 
-<div class="slide" id="slide3">
+<div class="scene" id="scene3">
 <h2>Spotkaliśmy się dnia 29.12.2025<br>(od tego dnia jestem najszczęśliwszy!!)</h2>
 </div>
 
-<div class="slide" id="slide4">
+<div class="scene" id="scene4">
 <h2>17.01.2026 ❤️ Wejście w związek</h2>
 </div>
 
-<div class="slide" id="slide5">
+<div class="scene" id="scene5">
 <h2>Zobaczymy jak potoczy się dalej…</h2>
 </div>
 
-<div class="slide" id="slide6">
-<div class="loader">💔 Analizuję wspomnienia…</div>
+<div class="scene" id="scene6">
+<h2>💔 Analizuję wspomnienia…</h2>
 </div>
 
-<div class="slide" id="slide7">
+<div class="scene" id="scene7">
 <h2>💌 Twoje życzenia tutaj</h2>
 </div>
 
 <div id="admin">
 <button onclick="forceUnlock()">🔓 unlock</button>
-<button onclick="nextSlide()">⏭ skip</button>
+<button onclick="nextScene()">⏭ skip</button>
 </div>
 
 <audio id="music" src="muzyka.mp3"></audio>
@@ -126,11 +128,10 @@ const birthday=new Date(2026,1,22,0,0,0);
 let offset=0;
 let unlocked=false;
 let current=0;
-let startX=0;
 
 const isMobile=/iPhone|Android|iPad/i.test(navigator.userAgent);
 
-/* 🌐 internet time */
+/* 🌐 czas */
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -146,9 +147,9 @@ const diff=birthday-now();
 
 if(diff<=0 && !unlocked){
 unlocked=true;
-countdown.innerText="🎉 Możesz wejść ❤️";
+countdown.innerText="🎬 Start filmu ❤️";
 startBtn.disabled=false;
-navigator.vibrate?.(30);
+navigator.vibrate?.([40,30,40]);
 return;
 }
 
@@ -162,14 +163,14 @@ countdown.innerText=`${d}d ${h}h ${m}m ${s}s`;
 }
 setInterval(updateCountdown,1000);
 
-/* 🎬 cinematic slide change */
-function nextSlide(){
-document.getElementById("slide"+current).classList.remove("active");
+/* 🎬 przejścia filmowe */
+function nextScene(){
+document.getElementById("scene"+current).classList.remove("active");
 current++;
-const next=document.getElementById("slide"+current);
-if(next) next.classList.add("active");
+const s=document.getElementById("scene"+current);
+if(s) s.classList.add("active");
 
-navigator.vibrate?.(20);
+navigator.vibrate?.(25);
 
 if(current===1) startMusic();
 
@@ -180,23 +181,13 @@ daysKnown.innerText=`Znamy się ${days} dni ❤️`;
 }
 
 if(current===6){
-setTimeout(nextSlide,3000);
+setTimeout(nextScene,3000);
 }
 }
 
-/* 📱 swipe */
-document.addEventListener("touchstart",e=>{
-startX=e.touches[0].clientX;
-});
-
-document.addEventListener("touchend",e=>{
-let dx=e.changedTouches[0].clientX-startX;
-if(dx<-60) nextSlide();
-});
-
-/* 🌌 gwiazdy */
+/* 🌌 gwiazdy cinematic */
 const starBox=document.getElementById("stars");
-for(let i=0;i<120;i++){
+for(let i=0;i<90;i++){
 let s=document.createElement("div");
 s.className="star";
 s.style.left=Math.random()*100+"%";
@@ -204,17 +195,7 @@ s.style.top=Math.random()*100+"%";
 starBox.appendChild(s);
 }
 
-document.addEventListener("touchmove",e=>{
-document.querySelectorAll(".star").forEach(st=>{
-let dx=st.offsetLeft-e.touches[0].clientX;
-let dy=st.offsetTop-e.touches[0].clientY;
-let dist=Math.sqrt(dx*dx+dy*dy);
-if(dist<80) st.style.transform="scale(2)";
-else st.style.transform="scale(1)";
-});
-});
-
-/* 🎵 music */
+/* 🎵 muzyka */
 function startMusic(){
 const m=document.getElementById("music");
 m.volume=0;
