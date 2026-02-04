@@ -8,7 +8,17 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont;}
 
-body{background:black;color:white;overflow:hidden;}
+body{
+background:black;
+color:white;
+overflow:hidden;
+animation:fadeIn 2s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:1;}
+}
 
 body:before,body:after{
 content:"";
@@ -51,16 +61,34 @@ animation:drift 16s ease-in-out infinite alternate;
 100%{transform:translate3d(0,12px,0) scale(1.04);}
 }
 
-.content{text-align:center;padding:30px;max-width:420px;}
+.content{
+text-align:center;
+padding:30px;
+max-width:420px;
+}
+
 h1{font-size:30px;margin-bottom:15px;}
 h2{font-weight:400;line-height:1.4;}
 
-canvas{position:fixed;top:0;left:0;z-index:0;}
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
 
-.timer{font-size:34px;margin-top:10px;transition:.8s;}
-.timer.unlock{transform:scale(1.6);opacity:0;filter:blur(10px);}
+.timer{
+font-size:34px;
+margin-top:10px;
+transition:.8s;
+}
 
-/* credits */
+.timer.unlock{
+transform:scale(1.6);
+opacity:0;
+filter:blur(10px);
+}
+
 .credits{
 position:absolute;
 bottom:-120%;
@@ -76,6 +104,23 @@ animation:credits 22s linear forwards;
 @keyframes credits{
 from{bottom:-120%;}
 to{bottom:120%;}
+}
+
+.fadeBlack{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+opacity:0;
+pointer-events:none;
+z-index:99999;
+transition:3s;
+}
+
+.fadeBlack.show{
+opacity:1;
 }
 
 .admin{
@@ -104,20 +149,19 @@ z-index:9999;
 </div>
 
 <div class="scene" id="scene1"><div class="content"><h1>Zaczynamy...</h1></div></div>
+
 <div class="scene" id="scene2"><div class="content"><h2>Znamy się od 29.11.2025 ❤️</h2></div></div>
+
 <div class="scene" id="scene3"><div class="content"><h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2></div></div>
+
 <div class="scene" id="scene4"><div class="content"><h2>17.01.2026 ❤️ związek 💍</h2></div></div>
+
 <div class="scene" id="scene5"><div class="content"><h2>Zobaczymy co przyniesie przyszłość…</h2></div></div>
 
 <div class="scene" id="scene6">
 <div class="content">
 <h1>💌 Wszystkiego najlepszego</h1>
-<p>
-Wszystkiego najlepszego moja księżniczko, życzę ci wszystkiego co najlepsze
-i chcę żebyś pamiętała, że jesteś najlepsza na całym świecie i nie zmieniał się
-bo ideału się nie zmienia. Jeszcze raz wszystkiego najlepszego
-i dziękuje że jesteś ❤️
-</p>
+<p id="letter"></p>
 </div>
 </div>
 
@@ -130,11 +174,15 @@ i dziękuje że jesteś ❤️
 </div>
 </div>
 
+<div class="fadeBlack" id="fadeBlack"></div>
+
 <script>
 
-const birthday=new Date(2026,1,22,0,0,0);
-let offset=0;
+const fullLetter=`Wszystkiego najlepszego moja księżniczko, życzę ci wszystkiego co najlepsze i chcę żebyś pamiętała, że jesteś najlepsza na całym świecie i nie zmieniał się bo ideału się nie zmienia. Jeszcze raz wszystkiego najlepszego i dziękuje że jesteś ❤️`;
 
+const birthday=new Date(2026,1,22,0,0,0);
+
+let offset=0;
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -174,20 +222,29 @@ scenes[current].classList.remove("active");
 current=i;
 scenes[current].classList.add("active");
 
+if(navigator.vibrate)navigator.vibrate(40);
+
+if(current===6)typeLetter();
+
 if(current===7){
 const c=document.getElementById("credits");
 c.classList.remove("start");
 void c.offsetWidth;
 c.classList.add("start");
-}
 
-if(navigator.vibrate)navigator.vibrate(40);
+setTimeout(()=>{
+document.getElementById("fadeBlack").classList.add("show");
+},22000);
+}
 }
 
 function nextScene(){showScene(current+1);}
 
 let startX=0;
-document.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},{passive:true});
+document.addEventListener("touchstart",e=>{
+startX=e.touches[0].clientX;
+},{passive:true});
+
 document.addEventListener("touchend",e=>{
 let endX=e.changedTouches[0].clientX;
 if(startX-endX>60)nextScene();
@@ -203,12 +260,28 @@ document.getElementById("admin").style.display="block";
 document.getElementById("admin").onclick=nextScene;
 }
 
+let letterStarted=false;
+function typeLetter(){
+if(letterStarted)return;
+letterStarted=true;
+
+const el=document.getElementById("letter");
+let i=0;
+
+function write(){
+if(i<fullLetter.length){
+el.innerHTML+=fullLetter[i];
+i++;
+setTimeout(write,28);
+}
+}
+write();
+}
+
 const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
-
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-resize();
-addEventListener("resize",resize);
+canvas.width=innerWidth;
+canvas.height=innerHeight;
 
 let stars=[];
 for(let i=0;i<120;i++){
