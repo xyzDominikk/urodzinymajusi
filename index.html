@@ -138,6 +138,8 @@ z-index:9999;
 <body>
 
 <canvas id="stars"></canvas>
+<audio id="music" src="muzyka.mp3" preload="auto" loop></audio>
+
 <div class="admin" id="admin">ADMIN ▶</div>
 
 <div class="scene active" id="scene0">
@@ -182,7 +184,34 @@ const fullLetter=`Wszystkiego najlepszego moja księżniczko, życzę ci wszystk
 
 const birthday=new Date(2026,1,22,0,0,0);
 
+/* MUZYKA */
+let musicStarted=false;
+
+function unlockMusic(){
+if(musicStarted)return;
+musicStarted=true;
+const music=document.getElementById("music");
+music.volume=0;
+music.play().then(()=>fadeInMusic()).catch(()=>{});
+}
+
+function fadeInMusic(){
+const music=document.getElementById("music");
+let v=0;
+const fade=setInterval(()=>{
+if(v<1){
+v+=0.05;
+music.volume=v;
+}else clearInterval(fade);
+},200);
+}
+
+document.addEventListener("touchstart",unlockMusic,{once:true});
+document.addEventListener("click",unlockMusic,{once:true});
+
+/* TIMER */
 let offset=0;
+
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -212,6 +241,7 @@ t.innerText=`${d}d ${h}h ${m}m ${s}s`;
 
 setInterval(updateTimer,1000);
 
+/* SCENY */
 let current=0;
 const scenes=document.querySelectorAll(".scene");
 
@@ -240,7 +270,9 @@ document.getElementById("fadeBlack").classList.add("show");
 
 function nextScene(){showScene(current+1);}
 
+/* SWIPE */
 let startX=0;
+
 document.addEventListener("touchstart",e=>{
 startX=e.touches[0].clientX;
 },{passive:true});
@@ -250,16 +282,19 @@ let endX=e.changedTouches[0].clientX;
 if(startX-endX>60)nextScene();
 },{passive:true});
 
+/* TIMER CLICK */
 document.getElementById("scene0").onclick=()=>{
 const now=new Date(new Date().getTime()+offset);
 if(now>=birthday)setTimeout(nextScene,600);
 };
 
+/* ADMIN */
 if(!/Mobi|Android|iPhone/i.test(navigator.userAgent)){
 document.getElementById("admin").style.display="block";
 document.getElementById("admin").onclick=nextScene;
 }
 
+/* LETTER */
 let letterStarted=false;
 function typeLetter(){
 if(letterStarted)return;
@@ -278,6 +313,7 @@ setTimeout(write,28);
 write();
 }
 
+/* GWIAZDY */
 const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
