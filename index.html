@@ -16,6 +16,17 @@ margin:0;
 color:white;
 text-align:center;
 overflow:hidden;
+transition:0.5s;
+}
+
+.pulse{
+animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+0%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
+50%{background:linear-gradient(135deg,#ff5e7e,#ff99cc);}
+100%{background:linear-gradient(135deg,#ff758c,#ff7eb3);}
 }
 
 .container{
@@ -36,7 +47,6 @@ margin-top:15px;
 
 button:disabled{
 opacity:0.4;
-cursor:not-allowed;
 }
 
 .letter{
@@ -44,7 +54,7 @@ position:fixed;
 bottom:-100%;
 left:50%;
 transform:translateX(-50%);
-width:350px;
+width:360px;
 background:white;
 color:black;
 padding:25px;
@@ -57,13 +67,23 @@ bottom:50%;
 transform:translate(-50%,50%);
 }
 
+.gallery{
+display:none;
+margin-top:15px;
+}
+
+.gallery img{
+width:90px;
+border-radius:10px;
+margin:5px;
+}
+
 canvas{
 position:fixed;
 top:0;
 left:0;
 pointer-events:none;
 }
-
 </style>
 
 </head>
@@ -74,122 +94,150 @@ pointer-events:none;
 
 <div class="container">
 <h1>🎂 Urodziny już za:</h1>
-<div id="countdown">Ładowanie czasu z internetu...</div>
+<div id="countdown">Ładowanie...</div>
 
 <button id="openBtn" onclick="openLetter()" disabled>
 🔒 List zablokowany
 </button>
+
+<div class="gallery" id="gallery">
+<h3>🖼️ Nasze wspomnienia</h3>
+<img src="https://picsum.photos/100?1">
+<img src="https://picsum.photos/100?2">
+<img src="https://picsum.photos/100?3">
+</div>
+
 </div>
 
 <div id="letter" class="letter">
 <h2>💌 List dla Ciebie</h2>
-<p>
-TU WPISZ SWÓJ TEKST ❤️
-</p>
-<button onclick="closeLetter()">Zamknij</button>
+<p id="typedText"></p>
+<button onclick="finishReading()">Zamknij</button>
 </div>
 
 <audio id="music" src="muzyka.mp3"></audio>
 
 <script>
 
-// 📅 DATA URODZIN (22 LUTY PÓŁNOC)
 const birthday = new Date(2026,1,22,0,0,0);
+let offset=0;
+let unlocked=false;
+let confettiDone=false;
 
-let internetOffset = 0;
-let unlocked = false;
+const fullText=`TU WPISZ SWÓJ LIST ❤️`;
+let index=0;
 
-// 🌐 pobieranie czasu z internetu
+// 🌐 czas z internetu
 async function syncTime(){
 try{
-const res = await fetch("https://worldtimeapi.org/api/ip");
-const data = await res.json();
-const internetNow = new Date(data.datetime);
-internetOffset = internetNow - new Date();
-}catch(e){
-console.log("Brak internetu — fallback lokalny");
-}
+const r=await fetch("https://worldtimeapi.org/api/ip");
+const d=await r.json();
+offset=new Date(d.datetime)-new Date();
+}catch{}
 }
 
 // ⏳ odliczanie
 function updateCountdown(){
 
-const now = new Date(new Date().getTime()+internetOffset);
-const diff = birthday - now;
+const now=new Date(new Date().getTime()+offset);
+const diff=birthday-now;
 
 if(diff<=0 && !unlocked){
-
 unlocked=true;
+document.body.classList.add("pulse");
 
-document.getElementById("countdown")
-.innerText="🎉 Wszystkiego najlepszego!";
-
+document.getElementById("countdown").innerText="🎉 Wszystkiego najlepszego!";
 const btn=document.getElementById("openBtn");
 btn.disabled=false;
 btn.innerText="💌 Otwórz list";
 
-startConfetti();
-document.getElementById("music").play();
+startConfettiOnce();
+fadeInMusic();
 
 return;
 }
 
 if(diff>0){
-const days=Math.floor(diff/(1000*60*60*24));
-const hours=Math.floor((diff/(1000*60*60))%24);
-const minutes=Math.floor((diff/(1000*60))%60);
-const seconds=Math.floor((diff/1000)%60);
+const d=Math.floor(diff/(1000*60*60*24));
+const h=Math.floor((diff/(1000*60*60))%24);
+const m=Math.floor((diff/(1000*60))%60);
+const s=Math.floor((diff/1000)%60);
 
 document.getElementById("countdown").innerText=
-days+"d "+hours+"h "+minutes+"m "+seconds+"s";
+d+"d "+h+"h "+m+"m "+s+"s";
 }
-
 }
 
 setInterval(updateCountdown,1000);
 
-// 💌 list
+// 💌 otwarcie listu
 function openLetter(){
 document.getElementById("letter").classList.add("show");
+typeWriter();
 }
 
-function closeLetter(){
+// ⌨️ pisanie listu
+function typeWriter(){
+if(index<fullText.length){
+document.getElementById("typedText").innerHTML+=fullText.charAt(index);
+index++;
+setTimeout(typeWriter,35);
+}
+}
+
+// 📖 koniec czytania
+function finishReading(){
 document.getElementById("letter").classList.remove("show");
+document.getElementById("gallery").style.display="block";
 }
 
-// 🎉 konfetti
+// 🎵 fade-in muzyki
+function fadeInMusic(){
+const music=document.getElementById("music");
+music.volume=0;
+music.play();
+let v=0;
+const fade=setInterval(()=>{
+if(v<1){
+v+=0.05;
+music.volume=v;
+}else clearInterval(fade);
+},200);
+}
+
+// 🎉 konfetti tylko raz
 const canvas=document.getElementById("confetti");
 const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
-
 let pieces=[];
 
-function startConfetti(){
-for(let i=0;i<150;i++){
+function startConfettiOnce(){
+if(confettiDone) return;
+confettiDone=true;
+
+for(let i=0;i<160;i++){
 pieces.push({
 x:Math.random()*canvas.width,
 y:-20,
-size:Math.random()*8+4,
-speed:Math.random()*3+2
+s:Math.random()*8+4,
+v:Math.random()*3+2
 });
 }
-animateConfetti();
+animate();
 }
 
-function animateConfetti(){
+function animate(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
 pieces.forEach(p=>{
-p.y+=p.speed;
-ctx.fillRect(p.x,p.y,p.size,p.size);
+p.y+=p.v;
+ctx.fillRect(p.x,p.y,p.s,p.s);
 });
-requestAnimationFrame(animateConfetti);
+requestAnimationFrame(animate);
 }
 
 // start
-syncTime().then(()=>{
-updateCountdown();
-});
+syncTime().then(updateCountdown);
 
 </script>
 
