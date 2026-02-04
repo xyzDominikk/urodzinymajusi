@@ -22,13 +22,7 @@ overflow:hidden;
 background:rgba(0,0,0,0.35);
 padding:40px;
 border-radius:20px;
-backdrop-filter:blur(10px);
-width:320px;
-}
-
-#countdown{
-font-size:24px;
-margin:20px 0;
+width:340px;
 }
 
 button{
@@ -37,12 +31,12 @@ border:none;
 border-radius:10px;
 font-size:16px;
 cursor:pointer;
-margin-top:10px;
-transition:0.3s;
+margin-top:15px;
 }
 
-button:hover{
-transform:scale(1.1);
+button:disabled{
+opacity:0.4;
+cursor:not-allowed;
 }
 
 .letter{
@@ -55,7 +49,6 @@ background:white;
 color:black;
 padding:25px;
 border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,0.3);
 transition:1s;
 }
 
@@ -64,66 +57,98 @@ bottom:50%;
 transform:translate(-50%,50%);
 }
 
-.close{
-margin-top:15px;
-background:#ff758c;
-color:white;
+canvas{
+position:fixed;
+top:0;
+left:0;
+pointer-events:none;
 }
+
 </style>
 
 </head>
 
 <body>
 
+<canvas id="confetti"></canvas>
+
 <div class="container">
-
 <h1>🎂 Urodziny już za:</h1>
+<div id="countdown">Ładowanie czasu z internetu...</div>
 
-<div id="countdown">Ładowanie...</div>
-
-<button onclick="openLetter()">💌 Otwórz list</button>
-
+<button id="openBtn" onclick="openLetter()" disabled>
+🔒 List zablokowany
+</button>
 </div>
 
 <div id="letter" class="letter">
-<h2>💖 List dla Ciebie</h2>
+<h2>💌 List dla Ciebie</h2>
 <p>
-TU WPISZ SWÓJ TEKST 😄  
-możesz zrobić romantyczny list,
-historię relacji albo życzenia.
+TU WPISZ SWÓJ TEKST ❤️
 </p>
-
-<button class="close" onclick="closeLetter()">Zamknij</button>
+<button onclick="closeLetter()">Zamknij</button>
 </div>
+
+<audio id="music" src="muzyka.mp3"></audio>
 
 <script>
 
-// 📅 USTAW DATĘ URODZIN (rok,miesiąc-1,dzień)
-const birthday = new Date(2026,1,22); 
+// 📅 DATA URODZIN (22 LUTY PÓŁNOC)
+const birthday = new Date(2026,1,22,0,0,0);
 
+let internetOffset = 0;
+let unlocked = false;
+
+// 🌐 pobieranie czasu z internetu
+async function syncTime(){
+try{
+const res = await fetch("https://worldtimeapi.org/api/ip");
+const data = await res.json();
+const internetNow = new Date(data.datetime);
+internetOffset = internetNow - new Date();
+}catch(e){
+console.log("Brak internetu — fallback lokalny");
+}
+}
+
+// ⏳ odliczanie
 function updateCountdown(){
 
-const now = new Date();
+const now = new Date(new Date().getTime()+internetOffset);
 const diff = birthday - now;
 
-if(diff <= 0){
-document.getElementById("countdown").innerText="🎉 To już dziś!";
+if(diff<=0 && !unlocked){
+
+unlocked=true;
+
+document.getElementById("countdown")
+.innerText="🎉 Wszystkiego najlepszego!";
+
+const btn=document.getElementById("openBtn");
+btn.disabled=false;
+btn.innerText="💌 Otwórz list";
+
+startConfetti();
+document.getElementById("music").play();
+
 return;
 }
 
-const days = Math.floor(diff/(1000*60*60*24));
-const hours = Math.floor((diff/(1000*60*60))%24);
-const minutes = Math.floor((diff/(1000*60))%60);
-const seconds = Math.floor((diff/1000)%60);
+if(diff>0){
+const days=Math.floor(diff/(1000*60*60*24));
+const hours=Math.floor((diff/(1000*60*60))%24);
+const minutes=Math.floor((diff/(1000*60))%60);
+const seconds=Math.floor((diff/1000)%60);
 
-document.getElementById("countdown").innerText =
+document.getElementById("countdown").innerText=
 days+"d "+hours+"h "+minutes+"m "+seconds+"s";
+}
 
 }
 
 setInterval(updateCountdown,1000);
-updateCountdown();
 
+// 💌 list
 function openLetter(){
 document.getElementById("letter").classList.add("show");
 }
@@ -131,6 +156,40 @@ document.getElementById("letter").classList.add("show");
 function closeLetter(){
 document.getElementById("letter").classList.remove("show");
 }
+
+// 🎉 konfetti
+const canvas=document.getElementById("confetti");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let pieces=[];
+
+function startConfetti(){
+for(let i=0;i<150;i++){
+pieces.push({
+x:Math.random()*canvas.width,
+y:-20,
+size:Math.random()*8+4,
+speed:Math.random()*3+2
+});
+}
+animateConfetti();
+}
+
+function animateConfetti(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+pieces.forEach(p=>{
+p.y+=p.speed;
+ctx.fillRect(p.x,p.y,p.size,p.size);
+});
+requestAnimationFrame(animateConfetti);
+}
+
+// start
+syncTime().then(()=>{
+updateCountdown();
+});
 
 </script>
 
