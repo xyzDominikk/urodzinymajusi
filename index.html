@@ -3,135 +3,177 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>❤️</title>
+<title>🎬 Urodziny</title>
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont;}
+
 body{
-margin:0;
 background:black;
 color:white;
-font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 overflow:hidden;
 }
 
-/* 🎬 scena filmowa */
+/* cinematic pasy */
+body:before,body:after{
+content:"";
+position:fixed;
+left:0;
+width:100%;
+height:8vh;
+background:black;
+z-index:1000;
+}
+body:before{top:0;}
+body:after{bottom:0;}
+
 .scene{
 position:fixed;
-top:0;
-left:0;
 width:100%;
 height:100%;
 display:flex;
 justify-content:center;
 align-items:center;
-text-align:center;
-padding:40px;
+flex-direction:column;
+background:black;
 opacity:0;
-transform:scale(1.2);
-filter:blur(20px);
-transition:1.6s cubic-bezier(.22,1,.36,1);
+transform:scale(1.05);
+transition:1.2s ease;
 }
 
 .scene.active{
 opacity:1;
 transform:scale(1);
-filter:blur(0);
+z-index:2;
 }
 
-button{
-padding:16px 24px;
-border:none;
-border-radius:18px;
-font-size:17px;
-margin-top:25px;
+/* slow camera drift */
+.scene.active .content{
+animation:drift 12s ease-in-out infinite alternate;
 }
 
-/* 🌌 gwiazdy */
-.star{
-position:absolute;
-width:2px;
-height:2px;
-background:white;
-border-radius:50%;
-opacity:.6;
-animation:twinkle 3s infinite alternate;
+@keyframes drift{
+0%{transform:translateY(-8px) scale(1);}
+100%{transform:translateY(8px) scale(1.03);}
 }
 
-@keyframes twinkle{
-from{opacity:.2}
-to{opacity:.8}
+.content{
+text-align:center;
+padding:30px;
+max-width:420px;
 }
 
-/* admin */
-#admin{
+h1{font-size:28px;margin-bottom:15px;}
+h2{font-weight:400;}
+
+canvas{
 position:fixed;
-top:20px;
-right:20px;
-background:#111;
-padding:15px;
-border-radius:14px;
+top:0;
+left:0;
+z-index:0;
+}
+
+.timer{
+font-size:30px;
+margin-top:10px;
+}
+
+.credits{
+position:absolute;
+bottom:-100%;
+animation:credits 20s linear forwards;
+font-size:20px;
+text-align:center;
+}
+
+@keyframes credits{
+from{bottom:-100%;}
+to{bottom:120%;}
+}
+
+.admin{
+position:fixed;
+top:10px;
+right:10px;
+background:red;
+padding:8px;
 display:none;
+z-index:9999;
 }
 </style>
 </head>
 
 <body>
 
-<div id="stars"></div>
+<canvas id="stars"></canvas>
 
-<!-- ⏳ TIMER -->
+<div class="admin" id="admin">
+ADMIN ▶
+</div>
+
+<!-- INTRO TIMER -->
 <div class="scene active" id="scene0">
-<div>
-<h1 id="countdown">Ładowanie...</h1>
-<button id="startBtn" disabled onclick="nextScene()">Wejdź ❤️</button>
+<div class="content">
+<h1>🎂 Odliczanie</h1>
+<div class="timer" id="timer"></div>
+<p style="opacity:.6;margin-top:15px;">kliknij gdy wybije ❤️</p>
 </div>
 </div>
 
-<!-- 🎬 INTRO -->
 <div class="scene" id="scene1">
-<h1>Dla Ciebie ❤️</h1>
+<div class="content">
+<h1>Zaczynamy...</h1>
+</div>
 </div>
 
 <div class="scene" id="scene2">
-<h2 id="daysKnown"></h2>
+<div class="content">
+<h2>Znamy się od 29.11.2025 ❤️</h2>
+</div>
 </div>
 
 <div class="scene" id="scene3">
-<h2>Spotkaliśmy się dnia 29.12.2025<br>(od tego dnia jestem najszczęśliwszy!!)</h2>
+<div class="content">
+<h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2>
+</div>
 </div>
 
 <div class="scene" id="scene4">
-<h2>17.01.2026 ❤️ Wejście w związek</h2>
+<div class="content">
+<h2>17 stycznia ❤️ związek 💍</h2>
+</div>
 </div>
 
 <div class="scene" id="scene5">
-<h2>Zobaczymy jak potoczy się dalej…</h2>
+<div class="content">
+<h2>Zobaczymy co przyniesie przyszłość…</h2>
+</div>
 </div>
 
 <div class="scene" id="scene6">
-<h2>💔 Analizuję wspomnienia…</h2>
+<div class="content">
+<h1>💌 Wszystkiego najlepszego</h1>
+<p>Tu wstawisz swoje życzenia ❤️</p>
+</div>
 </div>
 
 <div class="scene" id="scene7">
-<h2>💌 Twoje życzenia tutaj</h2>
+<div class="credits">
+<p>🎬 Film życia</p><br>
+<p>Reżyseria: Ty ❤️</p><br>
+<p>Główna rola: Ona 💕</p><br>
+<p>Dziękuję za wszystko...</p>
 </div>
-
-<div id="admin">
-<button onclick="forceUnlock()">🔓 unlock</button>
-<button onclick="nextScene()">⏭ skip</button>
 </div>
-
-<audio id="music" src="muzyka.mp3"></audio>
 
 <script>
+
+/* DATA */
 const birthday=new Date(2026,1,22,0,0,0);
+
+/* TIMER */
 let offset=0;
-let unlocked=false;
-let current=0;
 
-const isMobile=/iPhone|Android|iPad/i.test(navigator.userAgent);
-
-/* 🌐 czas */
 async function syncTime(){
 try{
 const r=await fetch("https://worldtimeapi.org/api/ip");
@@ -139,89 +181,109 @@ const d=await r.json();
 offset=new Date(d.datetime)-new Date();
 }catch{}
 }
-const now=()=>new Date(new Date().getTime()+offset);
 
-/* ⏳ timer */
-function updateCountdown(){
-const diff=birthday-now();
+function updateTimer(){
+const now=new Date(new Date().getTime()+offset);
+const diff=birthday-now;
+const t=document.getElementById("timer");
 
-if(diff<=0 && !unlocked){
-unlocked=true;
-countdown.innerText="🎬 Start filmu ❤️";
-startBtn.disabled=false;
-navigator.vibrate?.([40,30,40]);
+if(diff<=0){
+t.innerText="🎉 GOTOWE";
 return;
 }
 
-if(diff>0){
-const d=Math.floor(diff/(1000*60*60*24));
-const h=Math.floor((diff/(1000*60*60))%24);
-const m=Math.floor((diff/(1000*60))%60);
-const s=Math.floor((diff/1000)%60);
-countdown.innerText=`${d}d ${h}h ${m}m ${s}s`;
-}
-}
-setInterval(updateCountdown,1000);
+const d=Math.floor(diff/86400000);
+const h=Math.floor(diff/3600000)%24;
+const m=Math.floor(diff/60000)%60;
+const s=Math.floor(diff/1000)%60;
 
-/* 🎬 przejścia filmowe */
+t.innerText=`${d}d ${h}h ${m}m ${s}s`;
+}
+
+setInterval(updateTimer,1000);
+
+/* SCENY */
+let current=0;
+const scenes=document.querySelectorAll(".scene");
+
+function showScene(i){
+if(i>=scenes.length)return;
+
+scenes[current].classList.remove("active");
+current=i;
+scenes[current].classList.add("active");
+
+if(navigator.vibrate)navigator.vibrate(40);
+
+if(current===7){
+scenes[current].classList.add("active");
+}
+}
+
 function nextScene(){
-document.getElementById("scene"+current).classList.remove("active");
-current++;
-const s=document.getElementById("scene"+current);
-if(s) s.classList.add("active");
-
-navigator.vibrate?.(25);
-
-if(current===1) startMusic();
-
-if(current===2){
-const start=new Date(2025,10,29);
-const days=Math.floor((now()-start)/(1000*60*60*24));
-daysKnown.innerText=`Znamy się ${days} dni ❤️`;
+showScene(current+1);
 }
 
-if(current===6){
-setTimeout(nextScene,3000);
-}
+/* SWIPE */
+let startX=0;
+
+document.addEventListener("touchstart",e=>{
+startX=e.touches[0].clientX;
+});
+
+document.addEventListener("touchend",e=>{
+let endX=e.changedTouches[0].clientX;
+if(startX-endX>60)nextScene();
+});
+
+/* KLIK TIMER */
+document.getElementById("scene0").onclick=()=>{
+const now=new Date(new Date().getTime()+offset);
+if(now>=birthday)nextScene();
+};
+
+/* ADMIN tylko desktop */
+if(!/Mobi|Android|iPhone/i.test(navigator.userAgent)){
+document.getElementById("admin").style.display="block";
+document.getElementById("admin").onclick=nextScene;
 }
 
-/* 🌌 gwiazdy cinematic */
-const starBox=document.getElementById("stars");
-for(let i=0;i<90;i++){
-let s=document.createElement("div");
-s.className="star";
-s.style.left=Math.random()*100+"%";
-s.style.top=Math.random()*100+"%";
-starBox.appendChild(s);
-}
+/* GWIAZDY */
+const canvas=document.getElementById("stars");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
 
-/* 🎵 muzyka */
-function startMusic(){
-const m=document.getElementById("music");
-m.volume=0;
-m.play().catch(()=>{});
-let v=0;
-const i=setInterval(()=>{
-if(v<1){v+=0.05;m.volume=v;}
-else clearInterval(i);
-},200);
-}
+let stars=[];
 
-/* 🧠 admin */
-if(!isMobile){
-document.addEventListener("keydown",(e)=>{
-if(e.ctrlKey&&e.shiftKey&&e.key==="A"){
-admin.style.display="block";
-}
+for(let i=0;i<120;i++){
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*1.5
 });
 }
 
-function forceUnlock(){
-offset=birthday-new Date();
-updateCountdown();
+canvas.addEventListener("touchmove",e=>{
+const x=e.touches[0].clientX;
+const y=e.touches[0].clientY;
+stars.push({x,y,r:2});
+});
+
+function drawStars(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="white";
+stars.forEach(s=>{
+ctx.beginPath();
+ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+ctx.fill();
+});
+requestAnimationFrame(drawStars);
 }
 
-syncTime().then(updateCountdown);
+drawStars();
+syncTime().then(updateTimer);
+
 </script>
 
 </body>
