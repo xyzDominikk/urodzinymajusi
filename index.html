@@ -125,11 +125,12 @@ opacity:1;
 
 .admin{
 position:fixed;
-top:10px;
-right:10px;
-background:red;
-padding:8px;
-display:none;
+top:6px;
+right:8px;
+font-size:12px;
+color:white;
+background:transparent;
+padding:4px;
 z-index:9999;
 }
 </style>
@@ -140,7 +141,7 @@ z-index:9999;
 <canvas id="stars"></canvas>
 <audio id="music" src="muzyka.mp3" preload="auto" loop></audio>
 
-<div class="admin" id="admin">ADMIN ▶</div>
+<div class="admin" id="admin">Admin</div>
 
 <div class="scene active" id="scene0">
 <div class="content">
@@ -151,13 +152,9 @@ z-index:9999;
 </div>
 
 <div class="scene" id="scene1"><div class="content"><h1>Zaczynamy...</h1></div></div>
-
 <div class="scene" id="scene2"><div class="content"><h2>Znamy się od 29.11.2025 ❤️</h2></div></div>
-
 <div class="scene" id="scene3"><div class="content"><h2>Spotkaliśmy się 29.12.2025<br>(od tego dnia jestem najszczęśliwszy)</h2></div></div>
-
 <div class="scene" id="scene4"><div class="content"><h2>17.01.2026 ❤️ związek 💍</h2></div></div>
-
 <div class="scene" id="scene5"><div class="content"><h2>Zobaczymy co przyniesie przyszłość…</h2></div></div>
 
 <div class="scene" id="scene6">
@@ -183,6 +180,19 @@ z-index:9999;
 const fullLetter=`Wszystkiego najlepszego moja księżniczko, życzę ci wszystkiego co najlepsze i chcę żebyś pamiętała, że jesteś najlepsza na całym świecie i nie zmieniał się bo ideału się nie zmienia. Jeszcze raz wszystkiego najlepszego i dziękuje że jesteś ❤️`;
 
 const birthday=new Date(2026,1,22,0,0,0);
+
+/* BLOKADA TELEFON */
+const isMobile=/Mobi|Android|iPhone/i.test(navigator.userAgent);
+let adminUnlocked=false;
+
+/* ADMIN BUTTON */
+document.getElementById("admin").onclick=()=>{
+const p=prompt("Hasło:");
+if(p==="hala"){
+adminUnlocked=true;
+alert("Admin aktywny");
+}
+};
 
 /* MUZYKA */
 let musicStarted=false;
@@ -268,7 +278,10 @@ document.getElementById("fadeBlack").classList.add("show");
 }
 }
 
-function nextScene(){showScene(current+1);}
+function nextScene(){
+if(isMobile && !adminUnlocked) return;
+showScene(current+1);
+}
 
 /* SWIPE */
 let startX=0;
@@ -285,14 +298,8 @@ if(startX-endX>60)nextScene();
 /* TIMER CLICK */
 document.getElementById("scene0").onclick=()=>{
 const now=new Date(new Date().getTime()+offset);
-if(now>=birthday)setTimeout(nextScene,600);
+if(now>=birthday)setTimeout(()=>{if(!isMobile||adminUnlocked)nextScene();},600);
 };
-
-/* ADMIN */
-if(!/Mobi|Android|iPhone/i.test(navigator.userAgent)){
-document.getElementById("admin").style.display="block";
-document.getElementById("admin").onclick=nextScene;
-}
 
 /* LETTER */
 let letterStarted=false;
