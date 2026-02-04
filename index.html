@@ -7,33 +7,132 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont;}
-body{background:black;color:white;overflow:hidden;animation:fadeIn 2s ease;}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-body:before,body:after{content:"";position:fixed;left:0;width:100%;height:7vh;background:black;z-index:1000;}
-body:before{top:0;} body:after{bottom:0;}
 
-.scene{position:fixed;width:100%;height:100%;display:flex;justify-content:center;align-items:center;flex-direction:column;background:black;opacity:0;transform:scale(1.08) translateY(30px);transition:1.3s cubic-bezier(.2,.8,.2,1);}
-.scene.active{opacity:1;transform:scale(1) translateY(0);z-index:2;}
-.scene.active .content{animation:drift 16s ease-in-out infinite alternate;}
-@keyframes drift{0%{transform:translate3d(0,-12px,0) scale(1);}100%{transform:translate3d(0,12px,0) scale(1.04);}}
+body{
+background:black;
+color:white;
+overflow:hidden;
+animation:fadeIn 2s ease;
+}
 
-.content{text-align:center;padding:30px;max-width:420px;}
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:1;}
+}
+
+body:before,body:after{
+content:"";
+position:fixed;
+left:0;
+width:100%;
+height:7vh;
+background:black;
+z-index:1000;
+}
+body:before{top:0;}
+body:after{bottom:0;}
+
+.scene{
+position:fixed;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+background:black;
+opacity:0;
+transform:scale(1.08) translateY(30px);
+transition:1.3s cubic-bezier(.2,.8,.2,1);
+}
+
+.scene.active{
+opacity:1;
+transform:scale(1) translateY(0);
+z-index:2;
+}
+
+.scene.active .content{
+animation:drift 16s ease-in-out infinite alternate;
+}
+
+@keyframes drift{
+0%{transform:translate3d(0,-12px,0) scale(1);}
+100%{transform:translate3d(0,12px,0) scale(1.04);}
+}
+
+.content{
+text-align:center;
+padding:30px;
+max-width:420px;
+}
+
 h1{font-size:30px;margin-bottom:15px;}
 h2{font-weight:400;line-height:1.4;}
 
-canvas{position:fixed;top:0;left:0;z-index:0;}
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
 
-.timer{font-size:34px;margin-top:10px;transition:.8s;}
-.timer.unlock{transform:scale(1.6);opacity:0;filter:blur(10px);}
+.timer{
+font-size:34px;
+margin-top:10px;
+transition:.8s;
+}
 
-.credits{position:absolute;bottom:-120%;font-size:20px;text-align:center;opacity:.9;}
-.credits.start{animation:credits 22s linear forwards;}
-@keyframes credits{from{bottom:-120%;}to{bottom:120%;}}
+.timer.unlock{
+transform:scale(1.6);
+opacity:0;
+filter:blur(10px);
+}
 
-.fadeBlack{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0;pointer-events:none;z-index:99999;transition:3s;}
-.fadeBlack.show{opacity:1;}
+.credits{
+position:absolute;
+bottom:-120%;
+font-size:20px;
+text-align:center;
+opacity:.9;
+}
 
-.admin{position:fixed;top:6px;right:8px;font-size:12px;color:white;background:transparent;padding:4px;z-index:9999;}
+.credits.start{
+animation:credits 22s linear forwards;
+}
+
+@keyframes credits{
+from{bottom:-120%;}
+to{bottom:120%;}
+}
+
+.fadeBlack{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+opacity:0;
+pointer-events:none;
+z-index:99999;
+transition:3s;
+}
+
+.fadeBlack.show{
+opacity:1;
+}
+
+.admin{
+position:fixed;
+top:6px;
+right:8px;
+font-size:12px;
+color:white;
+background:transparent;
+padding:4px;
+z-index:9999;
+}
 </style>
 </head>
 
@@ -82,34 +181,40 @@ const fullLetter=`Wszystkiego najlepszego moja księżniczko, życzę ci wszystk
 
 const birthday=new Date(2026,1,22,0,0,0);
 
+/* BLOKADA TELEFON */
 const isMobile=/Mobi|Android|iPhone/i.test(navigator.userAgent);
 let adminUnlocked=false;
-
-/* MUZYKA */
-let musicStarted=false;
-function startMusic(){
-if(musicStarted)return;
-musicStarted=true;
-const music=document.getElementById("music");
-music.volume=0;
-music.play().then(()=>{
-let v=0;
-const fade=setInterval(()=>{
-if(v<1){v+=0.05;music.volume=v;}
-else clearInterval(fade);
-},200);
-}).catch(()=>{});
-}
 
 /* ADMIN BUTTON */
 document.getElementById("admin").onclick=()=>{
 const p=prompt("Hasło:");
 if(p==="hala"){
 adminUnlocked=true;
-startMusic();
 alert("Admin aktywny");
 }
 };
+
+/* MUZYKA */
+let musicStarted=false;
+
+function unlockMusic(){
+if(musicStarted)return;
+musicStarted=true;
+const music=document.getElementById("music");
+music.volume=0;
+music.play().then(()=>fadeInMusic()).catch(()=>{});
+}
+
+function fadeInMusic(){
+const music=document.getElementById("music");
+let v=0;
+const fade=setInterval(()=>{
+if(v<1){
+v+=0.05;
+music.volume=v;
+}else clearInterval(fade);
+},200);
+}
 
 /* TIMER */
 let offset=0;
@@ -177,7 +282,11 @@ showScene(current+1);
 
 /* SWIPE */
 let startX=0;
-document.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},{passive:true});
+
+document.addEventListener("touchstart",e=>{
+startX=e.touches[0].clientX;
+},{passive:true});
+
 document.addEventListener("touchend",e=>{
 let endX=e.changedTouches[0].clientX;
 if(startX-endX>60)nextScene();
@@ -187,6 +296,7 @@ if(startX-endX>60)nextScene();
 document.getElementById("scene0").onclick=()=>{
 const now=new Date(new Date().getTime()+offset);
 if(now>=birthday){
+unlockMusic();
 setTimeout(()=>{if(!isMobile||adminUnlocked)nextScene();},600);
 }
 };
@@ -243,3 +353,4 @@ syncTime().then(updateTimer);
 
 </body>
 </html>
+
