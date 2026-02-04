@@ -16,7 +16,7 @@ animation:fadeIn 2s ease;
 }
 
 @keyframes fadeIn{
-from{opacity:0;}
+from{opacity:0;background:black;}
 to{opacity:1;}
 }
 
@@ -58,8 +58,8 @@ animation:drift 16s ease-in-out infinite alternate;
 }
 
 @keyframes drift{
-0%{transform:translateY(-12px) scale(1);}
-100%{transform:translateY(12px) scale(1.04);}
+0%{transform:translate3d(0,-12px,0) scale(1);}
+100%{transform:translate3d(0,12px,0) scale(1.04);}
 }
 
 .content{
@@ -70,6 +70,13 @@ max-width:420px;
 
 h1{font-size:30px;margin-bottom:15px;}
 h2{font-weight:400;line-height:1.4;}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
 
 .timer{
 font-size:34px;
@@ -83,49 +90,19 @@ opacity:0;
 filter:blur(10px);
 }
 
-canvas{
-position:fixed;
-top:0;
-left:0;
-z-index:0;
-}
-
-.cinematicText{
-font-size:18px;
-line-height:1.6;
-opacity:.9;
-filter:blur(6px);
-transition:1s;
-}
-
-.cinematicText.show{
-filter:blur(0);
-}
-
-.caret{
-display:inline-block;
-width:2px;
-height:18px;
-background:white;
-margin-left:4px;
-animation:blink 1s infinite;
-}
-
-@keyframes blink{
-0%,50%,100%{opacity:1;}
-25%,75%{opacity:0;}
-}
-
+/* NAPISY KOŃCOWE AUTO START */
 .credits{
 position:absolute;
 bottom:-120%;
 font-size:20px;
 text-align:center;
 opacity:.9;
+animation:credits 22s linear forwards;
+animation-play-state:paused;
 }
 
-.credits.start{
-animation:credits 22s linear forwards;
+.scene.active .credits{
+animation-play-state:running;
 }
 
 @keyframes credits{
@@ -148,6 +125,7 @@ z-index:9999;
 <body>
 
 <canvas id="stars"></canvas>
+
 <div class="admin" id="admin">ADMIN ▶</div>
 
 <div class="scene active" id="scene0">
@@ -171,12 +149,12 @@ z-index:9999;
 <div class="scene" id="scene6">
 <div class="content">
 <h1>💌 Wszystkiego najlepszego</h1>
-<p id="letterText" class="cinematicText"></p>
+<p>Wszystkiego najlepszego moja księżniczko... ❤️</p>
 </div>
 </div>
 
 <div class="scene" id="scene7">
-<div class="credits" id="credits">
+<div class="credits">
 <p>🎬 Film życia</p><br>
 <p>Reżyseria: Dominik</p><br>
 <p>Główna rola: Maja💕</p><br>
@@ -229,14 +207,6 @@ current=i;
 scenes[current].classList.add("active");
 
 if(navigator.vibrate)navigator.vibrate(40);
-
-if(current===6){
-setTimeout(startLetterWriting,800);
-}
-
-if(current===7){
-document.getElementById("credits").classList.add("start");
-}
 }
 
 function nextScene(){
@@ -266,8 +236,13 @@ document.getElementById("admin").onclick=nextScene;
 
 const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
+
+function resize(){
 canvas.width=innerWidth;
 canvas.height=innerHeight;
+}
+resize();
+addEventListener("resize",resize);
 
 let stars=[];
 for(let i=0;i<120;i++){
@@ -291,46 +266,6 @@ requestAnimationFrame(drawStars);
 
 drawStars();
 syncTime().then(updateTimer);
-
-/* TYPEWRITER */
-const letterFullText="Wszystkiego najlepszego moja księżniczko Życzę Ci wszystkiego co najlepsze i pamiętaj, że jesteś NAJLEPSZA i jedyna taka cudowna, i dziękuję że jesteś ❤️";
-let letterIndex=0;
-let writingStarted=false;
-
-function startLetterWriting(){
-if(writingStarted)return;
-writingStarted=true;
-
-const el=document.getElementById("letterText");
-el.classList.add("show");
-
-function write(){
-
-if(letterIndex<letterFullText.length){
-
-const char=letterFullText.charAt(letterIndex);
-el.innerHTML+=char+'<span class="caret"></span>';
-letterIndex++;
-
-if(navigator.vibrate && letterIndex%5===0){
-navigator.vibrate(8);
-}
-
-let delay=35;
-if(char==="."||char==="!")delay=500;
-if(char===",")delay=180;
-
-setTimeout(()=>{
-el.innerHTML=el.innerHTML.replace('<span class="caret"></span>','');
-write();
-},delay);
-
-}
-
-}
-
-write();
-}
 
 </script>
 
